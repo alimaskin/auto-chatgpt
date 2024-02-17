@@ -3,8 +3,10 @@ import os
 import random
 import time
 
+from seleniumbase import SB
 import undetected_chromedriver as uc
 from dotenv import load_dotenv
+
 from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -27,7 +29,7 @@ class AutoBot:
 
     OPENAI_URL = "https://chat.openai.com/"
 
-    def __init__(self, headless: bool = True, wait: int = 60) -> None:
+    def __init__(self, driver, debug_mode: bool = True, wait: int = 60) -> None:
         """Initialize AutoBot.
 
         Args:
@@ -35,8 +37,14 @@ class AutoBot:
             wait (int, optional): implicitly_wait_time
         """
         self.implicitly_wait_time = wait
-        self.driver = self.set_driver(headless, self.implicitly_wait_time)
-        self.driver.get(AutoBot.OPENAI_URL)
+        self.debug_mode = debug_mode
+        self.headed = True if self.debug_mode else False
+        self.headless = True if not self.debug_mode else False
+        self.driver = driver
+
+        # with SB(uc=True, headed=self.headed, headless=self.headless) as self.driver:
+        self.driver.driver.implicitly_wait(wait)
+        self.driver.open(AutoBot.OPENAI_URL)
 
     def set_driver(self, headless: bool, wait_time: int) -> uc.Chrome:
         """Set driver.
@@ -45,14 +53,14 @@ class AutoBot:
             headless (bool): headless
             wait_time (int): implicitly_wait_time
         """
-        options = uc.ChromeOptions()
-        if headless:
-            options.add_argument("--headless")
-        driver = uc.Chrome(options=options)
+        # options = uc.ChromeOptions()
+        # if headless:
+        #     options.add_argument("--headless")
+        # driver = uc.Chrome(options=options)
         # options.add_argument('--no-sandbox')
         # options.add_argument('--disable-dev-shm-usage')
 
-        # wait for the page to load
+        driver = SB(uc=True, headed=headless, headless=headless)
         driver.implicitly_wait(wait_time)
         return driver
 
